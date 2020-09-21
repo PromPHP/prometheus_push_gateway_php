@@ -9,7 +9,7 @@ use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Prometheus\CollectorRegistry;
 use Prometheus\MetricFamilySamples;
-use Prometheus\PushGateway;
+use PrometheusPushGateway\PushGateway;
 
 class PushGatewayTest extends TestCase
 {

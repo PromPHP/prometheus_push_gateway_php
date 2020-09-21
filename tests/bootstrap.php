@@ -11,6 +11,6 @@ if (!file_exists($autoload)) {
     exit(1);
 }
 $loader = require $autoload;
-$loader->add('Test\\Prometheus', __DIR__);
+$loader->add('Test\\PrometheusPushGateway', __DIR__);
 
 define('REDIS_HOST', isset($_ENV['REDIS_HOST']) ? $_ENV['REDIS_HOST'] : '127.0.0.1');
