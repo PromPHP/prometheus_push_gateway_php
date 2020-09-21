@@ -39,7 +39,7 @@ Also look at the [examples](examples).
 
 ## Black box testing
 
-Just start the pushgateway by using docker-compose
+Just start the PushGateway by using docker-compose
 ```
 docker-compose up
 ```
