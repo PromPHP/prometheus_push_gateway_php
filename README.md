@@ -1,6 +1,6 @@
 # A prometheus push gateway client library written in PHP
 
-![Tests](https://github.com/lkaemmerling/prometheus_push_gateway_php/workflows/Tests/badge.svg)
+![Tests](https://github.com/promphp/prometheus_push_gateway_php/workflows/Tests/badge.svg)
 
 This package provides an easy PHP API for Prometheus Push Gateway. It was part of https://github.com/LKaemmerling/prometheus_client_php and was moved into a seperate package as of Prometheus Client PHP Version 2.0.0. 
 
@@ -12,7 +12,7 @@ The PushGateway allows Prometheus to get Metrics from Systems that are not scrab
 Add as [Composer](https://getcomposer.org/) dependency:
 
 ```sh
-composer require lkaemmerling/prometheus_push_gateway_php
+composer require promphp/prometheus_push_gateway_php
 ```
 
 ## Usage
