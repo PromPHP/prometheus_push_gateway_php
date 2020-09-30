@@ -1,11 +1,11 @@
 {
-  "name": "lkaemmerling/prometheus_push_gateway_php",
+  "name": "promphp/prometheus_push_gateway_php",
   "description": "Prometheus Push Gateway client for PHP applications.",
   "type": "library",
   "require": {
     "php": "^7.2",
     "guzzlehttp/guzzle": "^6.3|^7.0",
-    "lkaemmerling/prometheus_client_php": "^1.0|^2.0"
+    "promphp/prometheus_client_php": "^1.0|^2.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^8.4",
