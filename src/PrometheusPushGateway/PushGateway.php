@@ -25,12 +25,12 @@ class PushGateway
 
     /**
      * PushGateway constructor.
-     * @param string $address host:port of the push gateway
+     * @param string $address (http|https)://host:port of the push gateway
      * @param ClientInterface $client
      */
     public function __construct($address, ClientInterface $client = null)
     {
-        $this->address = $address;
+        $this->address = strpos($address, 'http') === false ? 'http://' . $address : $address;
         $this->client = $client ?? new Client();
     }
 
@@ -73,15 +73,15 @@ class PushGateway
     }
 
     /**
-     * @param CollectorRegistry $collectorRegistry
+     * @param CollectorRegistry|null $collectorRegistry
      * @param string $job
      * @param array $groupingKey
      * @param string $method
      * @throws GuzzleException
      */
-    private function doRequest(CollectorRegistry $collectorRegistry, string $job, array $groupingKey, $method): void
+    private function doRequest(?CollectorRegistry $collectorRegistry, string $job, array $groupingKey, $method): void
     {
-        $url = "http://" . $this->address . "/metrics/job/" . $job;
+        $url = $this->address . "/metrics/job/" . $job;
         if (!empty($groupingKey)) {
             foreach ($groupingKey as $label => $value) {
                 $url .= "/" . $label . "/" . $value;
