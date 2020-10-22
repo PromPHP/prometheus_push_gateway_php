@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\PrometheusPushGateway;
 
 use GuzzleHttp\Client;
@@ -43,7 +45,7 @@ class PushGatewayTest extends TestCase
      */
     public function invalidResponseShouldThrowRuntimeException(): void
     {
-        $this->expectException(\RuntimeException::class);
+        self::expectException(\RuntimeException::class);
 
         $mockedCollectorRegistry = $this->createMock(CollectorRegistry::class);
         $mockedCollectorRegistry->method('getMetricFamilySamples')->with()->willReturn([
@@ -81,6 +83,11 @@ class PushGatewayTest extends TestCase
      * @test
      *
      * @dataProvider validAddressAndRequestsProvider
+     * @param string $address
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function validAddressShouldCreateValidRequests(string $address, string $scheme, string $host, int $port): void
     {
@@ -97,15 +104,21 @@ class PushGatewayTest extends TestCase
 
         $pushGateway = new PushGateway($address, $client);
         $pushGateway->push($mockedCollectorRegistry, 'foo');
-
-        $uri = $mockHandler->getLastRequest()->getUri();
-        $this->assertEquals($scheme, $uri->getScheme());
-        $this->assertEquals($host, $uri->getHost());
-        $this->assertEquals($port, $uri->getPort());
-        $this->assertEquals('/metrics/job/foo', $uri->getPath());
+        if ($mockHandler->getLastRequest() !== null) {
+            $uri = $mockHandler->getLastRequest()->getUri();
+            self::assertEquals($scheme, $uri->getScheme());
+            self::assertEquals($host, $uri->getHost());
+            self::assertEquals($port, $uri->getPort());
+            self::assertEquals('/metrics/job/foo', $uri->getPath());
+        } else {
+            self::fail("No request performed");
+        }
     }
 
-    public function validAddressAndRequestsProvider()
+    /**
+     * @return array[]
+     */
+    public function validAddressAndRequestsProvider(): array
     {
         return [
             ['foo.bar:123', 'http', 'foo.bar', 123],
