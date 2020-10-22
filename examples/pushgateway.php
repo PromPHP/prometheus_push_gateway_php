@@ -22,5 +22,5 @@ $registry = new CollectorRegistry($adapter);
 $counter = $registry->registerCounter('test', 'some_counter', 'it increases', ['type']);
 $counter->incBy(6, ['blue']);
 
-$pushGateway = new PushGateway('192.168.59.100:9091');
+$pushGateway = new PushGateway('http://192.168.59.100:9091');
 $pushGateway->push($registry, 'my_job', ['instance' => 'foo']);
