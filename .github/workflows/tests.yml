@@ -32,7 +32,5 @@ jobs:
 
       - name: Install dependencies
         run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
-      - name: Run PHP Code Sniffer
-        run: ./vendor/bin/phpcs
       - name: Execute tests
         run: vendor/bin/phpunit

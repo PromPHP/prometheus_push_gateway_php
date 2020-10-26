@@ -13,6 +13,9 @@ use RuntimeException;
 
 class PushGateway
 {
+    const HTTP_PUT = "PUT";
+    const HTTP_POST = "POST";
+    const HTTP_DELETE = "DELETE";
     /**
      * @var string
      */
@@ -26,9 +29,9 @@ class PushGateway
     /**
      * PushGateway constructor.
      * @param string $address (http|https)://host:port of the push gateway
-     * @param ClientInterface $client
+     * @param ClientInterface|null $client
      */
-    public function __construct($address, ClientInterface $client = null)
+    public function __construct(string $address, ?ClientInterface $client = null)
     {
         $this->address = strpos($address, 'http') === false ? 'http://' . $address : $address;
         $this->client = $client ?? new Client();
@@ -39,50 +42,50 @@ class PushGateway
      * Uses HTTP PUT.
      * @param CollectorRegistry $collectorRegistry
      * @param string $job
-     * @param array $groupingKey
+     * @param array<string> $groupingKey
      * @throws GuzzleException
      */
     public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
     {
-        $this->doRequest($collectorRegistry, $job, $groupingKey, 'put');
+        $this->doRequest($collectorRegistry, $job, $groupingKey, self::HTTP_PUT);
     }
 
     /**
      * Pushes all metrics in a Collector, replacing only previously pushed metrics of the same name and job.
      * Uses HTTP POST.
      * @param CollectorRegistry $collectorRegistry
-     * @param $job
-     * @param $groupingKey
+     * @param string $job
+     * @param array<string> $groupingKey
      * @throws GuzzleException
      */
     public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
     {
-        $this->doRequest($collectorRegistry, $job, $groupingKey, 'post');
+        $this->doRequest($collectorRegistry, $job, $groupingKey, self::HTTP_POST);
     }
 
     /**
      * Deletes metrics from the Push Gateway.
      * Uses HTTP POST.
      * @param string $job
-     * @param array $groupingKey
+     * @param array<string> $groupingKey
      * @throws GuzzleException
      */
     public function delete(string $job, array $groupingKey = []): void
     {
-        $this->doRequest(null, $job, $groupingKey, 'delete');
+        $this->doRequest(null, $job, $groupingKey, self::HTTP_DELETE);
     }
 
     /**
      * @param CollectorRegistry|null $collectorRegistry
      * @param string $job
-     * @param array $groupingKey
+     * @param array<string> $groupingKey
      * @param string $method
      * @throws GuzzleException
      */
-    private function doRequest(?CollectorRegistry $collectorRegistry, string $job, array $groupingKey, $method): void
+    private function doRequest(?CollectorRegistry $collectorRegistry, string $job, array $groupingKey, string $method): void
     {
         $url = $this->address . "/metrics/job/" . $job;
-        if (!empty($groupingKey)) {
+        if ($groupingKey !== []) {
             foreach ($groupingKey as $label => $value) {
                 $url .= "/" . $label . "/" . $value;
             }
@@ -96,13 +99,13 @@ class PushGateway
             'timeout' => 20,
         ];
 
-        if ($method != 'delete') {
+        if ($method !== self::HTTP_DELETE && $collectorRegistry !== null) {
             $renderer = new RenderTextFormat();
             $requestOptions['body'] = $renderer->render($collectorRegistry->getMetricFamilySamples());
         }
         $response = $this->client->request($method, $url, $requestOptions);
         $statusCode = $response->getStatusCode();
-        if (!in_array($statusCode, [200, 202])) {
+        if (!in_array($statusCode, [200, 202], true)) {
             $msg = "Unexpected status code "
                 . $statusCode
                 . " received from push gateway "
