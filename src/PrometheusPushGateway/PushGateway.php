@@ -31,7 +31,7 @@ class PushGateway
      * @param string $address (http|https)://host:port of the push gateway
      * @param ClientInterface|null $client
      */
-    public function __construct(string $address, ClientInterface $client = null)
+    public function __construct(string $address, ?ClientInterface $client = null)
     {
         $this->address = strpos($address, 'http') === false ? 'http://' . $address : $address;
         $this->client = $client ?? new Client();
