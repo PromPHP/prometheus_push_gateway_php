@@ -2,7 +2,7 @@
 
 ![Tests](https://github.com/promphp/prometheus_push_gateway_php/workflows/Tests/badge.svg)
 
-This package provides an easy PHP API for Prometheus Push Gateway. It was part of https://github.com/LKaemmerling/prometheus_client_php and was moved into a seperate package as of Prometheus Client PHP Version 2.0.0. 
+This package provides an easy PHP API for Prometheus Push Gateway. It was part of [promphp/prometheus_client_php](https://github.com/promphp/prometheus_client_php) and was moved into a seperate package as of Prometheus Client PHP Version 2.0.0. 
 
 ## How does it work?
 
