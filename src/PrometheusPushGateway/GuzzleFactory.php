@@ -6,7 +6,6 @@ namespace PrometheusPushGateway;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -15,7 +14,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 
-use function class_exists;
 use function GuzzleHttp\Psr7\stream_for;
 use function GuzzleHttp\Psr7\try_fopen;
 use function sprintf;
@@ -83,10 +81,6 @@ final class GuzzleFactory
 
     private function createRequestFactory(): RequestFactoryInterface
     {
-        if (class_exists(HttpFactory::class)) {
-            return new HttpFactory();
-        }
-
         return new class implements RequestFactoryInterface {
             public function createRequest(string $method, $uri): RequestInterface
             {
@@ -97,10 +91,6 @@ final class GuzzleFactory
 
     private function createStreamFactory(): StreamFactoryInterface
     {
-        if (class_exists(HttpFactory::class)) {
-            return new HttpFactory();
-        }
-
         return new class implements StreamFactoryInterface {
             public function createStream(string $content = ''): StreamInterface
             {

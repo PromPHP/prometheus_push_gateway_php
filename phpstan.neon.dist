@@ -4,7 +4,14 @@ parameters:
         - src
         - tests
     reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
     ignoreErrors:
         -
             # REDIS stuff only runs with it available
             '#Constant REDIS_HOST not found\.#'
+        - message: '#Instanceof between GuzzleHttp\\Client and Psr\\Http\\Client\\ClientInterface will always evaluate to true.#'
+          path: src/PrometheusPushGateway/GuzzleFactory.php
+        - message: '#Instanceof between GuzzleHttp\\Client and Psr\\Http\\Client\\ClientInterface will always evaluate to true.#'
+          path: src/PrometheusPushGateway/GuzzleFactory.php
+        - message: '#Unreachable statement - code above always terminates.#'
+          path: src/PrometheusPushGateway/GuzzleFactory.php

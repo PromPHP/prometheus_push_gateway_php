@@ -19,7 +19,7 @@ final class SymfonyFactory
     private $streamFactory;
 
     /**
-     * @var ?RequestFactoryInterface
+     * @var ?ResponseFactoryInterface
      */
     private $responseFactory;
 
