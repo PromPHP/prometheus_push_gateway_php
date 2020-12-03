@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace PrometheusPushGateway;
 
-use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Client\ClientInterface;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -17,9 +17,11 @@ use function in_array;
 
 final class PsrPushGateway implements PushGateway
 {
-    private const HTTP_PUT = "PUT";
-    private const HTTP_POST = "POST";
-    private const HTTP_DELETE = "DELETE";
+    private const METHOD_PUT = "PUT";
+    private const METHOD_POST = "POST";
+    private const METHOD_DELETE = "DELETE";
+    private const STATUS_OK = 200;
+    private const STATUS_ACCEPTED = 202;
 
     /**
      * @var string
@@ -64,7 +66,7 @@ final class PsrPushGateway implements PushGateway
      */
     public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
     {
-        $this->doRequest(self::HTTP_PUT, $job, $groupingKey, $collectorRegistry);
+        $this->doRequest(self::METHOD_PUT, $job, $groupingKey, $collectorRegistry);
     }
 
     /**
@@ -72,7 +74,7 @@ final class PsrPushGateway implements PushGateway
      */
     public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
     {
-        $this->doRequest(self::HTTP_POST, $job, $groupingKey, $collectorRegistry);
+        $this->doRequest(self::METHOD_POST, $job, $groupingKey, $collectorRegistry);
     }
 
     /**
@@ -80,7 +82,7 @@ final class PsrPushGateway implements PushGateway
      */
     public function delete(string $job, array $groupingKey = []): void
     {
-        $this->doRequest(self::HTTP_DELETE, $job, $groupingKey);
+        $this->doRequest(self::METHOD_DELETE, $job, $groupingKey);
     }
 
     /**
@@ -102,15 +104,11 @@ final class PsrPushGateway implements PushGateway
         try {
             $response = $this->client->sendRequest($request);
             $statusCode = $response->getStatusCode();
-            if (!in_array($statusCode, [200, 202], true)) {
-                $msg = "Unexpected status code "
-                    . $statusCode
-                    . " received from push gateway "
-                    . $this->address . ": " . $response->getBody()->getContents();
-                throw new RuntimeException($msg);
+            if (!in_array($statusCode, [self::STATUS_OK, self::STATUS_ACCEPTED], true)) {
+                throw PushGatewayException::dueToUnexpectedStatusCode($this->address, $response);
             }
         } catch (ClientExceptionInterface $exception) {
-            throw new RuntimeException('The request could not be send or process', 0, $exception);
+            throw PushGatewayException::dueToServiceUnavailable($exception);
         }
     }
 
@@ -143,7 +141,7 @@ final class PsrPushGateway implements PushGateway
         $request = $this->requestFactory->createRequest($method, $url)
             ->withHeader('Content-Type', RenderTextFormat::MIME_TYPE);
 
-        if (self::HTTP_DELETE === $request->getMethod()) {
+        if (self::METHOD_DELETE === $request->getMethod()) {
             return $request;
         }
 

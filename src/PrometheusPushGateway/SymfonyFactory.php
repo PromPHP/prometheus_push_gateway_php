@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PrometheusPushGateway;
 
-use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\HttpClient\HttpClient;

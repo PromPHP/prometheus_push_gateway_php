@@ -7,16 +7,18 @@ namespace PrometheusPushGateway;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\RequestOptions;
+use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 use function GuzzleHttp\Psr7\stream_for;
 use function GuzzleHttp\Psr7\try_fopen;
-use function sprintf;
+use function in_array;
 
 final class GuzzleFactory
 {
@@ -104,11 +106,12 @@ final class GuzzleFactory
 
             public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
             {
+                static $modeList = ['r', 'w', 'a', 'x', 'c'];
                 try {
                     $resource = try_fopen($filename, $mode);
-                } catch (\RuntimeException $exception) {
-                    if ('' === $mode || false === \in_array($mode[0], ['r', 'w', 'a', 'x', 'c'], true)) {
-                        throw new \InvalidArgumentException(sprintf('Invalid file opening mode "%s"', $mode), 0, $exception);
+                } catch (RuntimeException $exception) {
+                    if ('' === $mode || false === in_array($mode[0], $modeList, true)) {
+                        throw new InvalidArgumentException('Invalid file opening mode "' . $mode . '"', 0, $exception);
                     }
 
                     throw $exception;

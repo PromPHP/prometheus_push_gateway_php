@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PrometheusPushGateway;
 
 use Prometheus\CollectorRegistry;
-use RuntimeException;
 
 interface PushGateway
 {
@@ -16,7 +15,7 @@ interface PushGateway
      * @param string $job
      * @param array<string> $groupingKey
      *
-     * @throws RuntimeException
+     * @throws PushGatewayException
      */
     public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void;
 
@@ -27,7 +26,7 @@ interface PushGateway
      * @param string $job
      * @param array<string> $groupingKey
      *
-     * @throws RuntimeException
+     * @throws PushGatewayException
      */
     public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void;
 
@@ -37,7 +36,7 @@ interface PushGateway
      * @param string $job
      * @param array<string> $groupingKey
      *
-     * @throws RuntimeException
+     * @throws PushGatewayException
      */
     public function delete(string $job, array $groupingKey = []): void;
 }
