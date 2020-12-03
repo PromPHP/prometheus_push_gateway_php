@@ -33,9 +33,9 @@ final class SymfonyFactory
 
     /**
      * @param string $address
-     * @param HttpClientInterface|array $defaultOptions
-     * @param int $maxHostConnections
-     * @param int $maxPendingPushes
+     * @param HttpClientInterface|array $defaultOptions if it is an array it represents options used to create a Symfony HTTP Client
+     * @param int $maxHostConnections only taken into account if $defaultOptions is an array
+     * @param int $maxPendingPushes only taken into account if $defaultOptions is an array
      *
      * @return PushGateway
      */

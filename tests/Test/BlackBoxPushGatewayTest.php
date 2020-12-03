@@ -8,14 +8,29 @@ use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\InMemory;
-use PrometheusPushGateway\PushGateway;
+use PrometheusPushGateway\GuzzleFactory;
+use PrometheusPushGateway\SymfonyFactory;
 
 class BlackBoxPushGatewayTest extends TestCase
 {
     /**
-     * @test
+     * @var GuzzleFactory
      */
-    public function pushGatewayShouldWork(): void
+    private $gatewayFactory;
+
+    public function setUp(): void
+    {
+        $this->gatewayFactory = new GuzzleFactory();
+    }
+
+    /**
+     * @test
+     *
+     * @dataProvider pushGatewayProvider
+     *
+     * @param SymfonyFactory|GuzzleFactory $factory
+     */
+    public function pushGatewayShouldWork($factory): void
     {
         $adapter = new InMemory();
         $registry = new CollectorRegistry($adapter);
@@ -23,7 +38,7 @@ class BlackBoxPushGatewayTest extends TestCase
         $counter = $registry->registerCounter('test', 'some_counter', 'it increases', ['type']);
         $counter->incBy(6, ['blue']);
 
-        $pushGateway = new PushGateway('pushgateway:9091');
+        $pushGateway = $factory->newGateway('pushgateway:9091');
         $pushGateway->push($registry, 'my_job', ['instance' => 'foo']);
 
         $httpClient = new Client();
@@ -35,7 +50,7 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
             $metrics
         );
 
-        $pushGateway = new PushGateway('http://pushgateway:9091');
+        $pushGateway = $factory->newGateway('http://pushgateway:9091');
         $pushGateway->delete('my_job', ['instance' => 'foo']);
 
         $httpClient = new Client();
@@ -46,5 +61,11 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
 test_some_counter{instance="foo",job="my_job",type="blue"} 6',
             $metrics
         );
+    }
+
+    public function pushGatewayProvider(): iterable
+    {
+        yield 'symfony' => [new SymfonyFactory()];
+        yield 'guzzle'  => [new GuzzleFactory()];
     }
 }

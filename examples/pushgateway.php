@@ -2,11 +2,14 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use GuzzleHttp\RequestOptions;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\Redis;
-use PrometheusPushGateway\PushGateway;
 use Prometheus\Storage\APC;
 use Prometheus\Storage\InMemory;
+use PrometheusPushGateway\GuzzleFactory;
+use PrometheusPushGateway\SymfonyFactory;
+
 $adapter = $_GET['adapter'];
 
 if ($adapter === 'redis') {
@@ -23,5 +26,18 @@ $registry = new CollectorRegistry($adapter);
 $counter = $registry->registerCounter('test', 'some_counter', 'it increases', ['type']);
 $counter->incBy(6, ['blue']);
 
-$pushGateway = new PushGateway('http://192.168.59.100:9091');
-$pushGateway->push($registry, 'my_job', ['instance' => 'foo']);
+$guzzleFactory = new GuzzleFactory();
+$guzzlePushGateway = $guzzleFactory->newGateway(
+    'http://192.168.59.100:9091',
+    [RequestOptions::CONNECT_TIMEOUT => 2, RequestOptions::TIMEOUT => 10]
+);
+$guzzlePushGateway->push($registry, 'my_job', ['instance' => 'foo']);
+
+//or using Symfony Client
+
+$symfonyFactory = new SymfonyFactory();
+$symfonyPushGateway = $symfonyFactory->newGateway(
+    'http://192.168.59.100:9091',
+    ['timeout' => 2, 'max_duration' => 10]
+);
+$symfonyPushGateway->push($registry, 'my_job', ['instance' => 'foo']);

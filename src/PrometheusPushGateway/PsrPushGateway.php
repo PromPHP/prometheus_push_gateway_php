@@ -151,10 +151,10 @@ final class PsrPushGateway implements PushGateway
             return $request;
         }
 
-        $renderer = new RenderTextFormat();
-
         return $request->withBody(
-            $this->streamFactory->createStream($renderer->render($collectorRegistry->getMetricFamilySamples()))
+            $this->streamFactory->createStream(
+                (new RenderTextFormat())->render($collectorRegistry->getMetricFamilySamples())
+            )
         );
     }
 }

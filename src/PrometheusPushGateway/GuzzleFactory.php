@@ -29,6 +29,10 @@ final class GuzzleFactory
      */
     private $requestFactory;
 
+    /**
+     * @param StreamFactoryInterface|null $streamFactory
+     * @param RequestFactoryInterface|null $requestFactory
+     */
     public function __construct(
         StreamFactoryInterface $streamFactory = null,
         RequestFactoryInterface $requestFactory = null
@@ -37,6 +41,12 @@ final class GuzzleFactory
         $this->streamFactory = $streamFactory ?? $this->createStreamFactory();
     }
 
+    /**
+     * @param string $address
+     * @param array $options Guzzle Client config options
+     *
+     * @return PushGateway
+     */
     public function newGateway(string $address, array $options = []): PushGateway
     {
         return new PsrPushGateway(
