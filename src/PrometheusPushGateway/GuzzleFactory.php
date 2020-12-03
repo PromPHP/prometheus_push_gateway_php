@@ -7,8 +7,11 @@ namespace PrometheusPushGateway;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\HttpFactory;
+use GuzzleHttp\RequestOptions;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -49,12 +52,33 @@ final class GuzzleFactory
      */
     public function newGateway(string $address, array $options = []): PushGateway
     {
-        return new PsrPushGateway(
-            $address,
-            new Client($options),
-            $this->requestFactory,
-            $this->streamFactory
-        );
+        $client = new Client($options);
+        if ($client instanceof ClientInterface) {
+            return new PsrPushGateway($address, $client, $this->requestFactory, $this->streamFactory);
+        }
+
+        $psr7Client = new class ($client) implements ClientInterface {
+            /**
+             * @var Client
+             */
+            private $client;
+
+            public function __construct(Client $client)
+            {
+                $this->client = $client;
+            }
+
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                return $this->client->send($request, [
+                    RequestOptions::SYNCHRONOUS => true,
+                    RequestOptions::ALLOW_REDIRECTS => false,
+                    RequestOptions::HTTP_ERRORS => false,
+                ]);
+            }
+        };
+
+        return new PsrPushGateway($address, $psr7Client, $this->requestFactory, $this->streamFactory);
     }
 
     private function createRequestFactory(): RequestFactoryInterface
