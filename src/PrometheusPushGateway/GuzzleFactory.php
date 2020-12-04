@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrometheusPushGateway;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
@@ -19,6 +20,7 @@ use RuntimeException;
 use function GuzzleHttp\Psr7\stream_for;
 use function GuzzleHttp\Psr7\try_fopen;
 use function in_array;
+use function is_array;
 
 final class GuzzleFactory
 {
@@ -46,24 +48,25 @@ final class GuzzleFactory
 
     /**
      * @param string $address
-     * @param array $options Guzzle Client config options
+     * @param GuzzleClientInterface|array $options Guzzle Client or Guzzle Client config options
      *
-     * @return PushGateway
+     * @return PushGatewayInterface
      */
-    public function newGateway(string $address, array $options = []): PushGateway
+    public function newGateway(string $address, $options = []): PushGatewayInterface
     {
-        $client = new Client($options);
+        $client = is_array($options) ? new Client($options) : $options;
+
         if ($client instanceof ClientInterface) {
             return new PsrPushGateway($address, $client, $this->requestFactory, $this->streamFactory);
         }
 
         $psr7Client = new class ($client) implements ClientInterface {
             /**
-             * @var Client
+             * @var GuzzleClientInterface
              */
             private $client;
 
-            public function __construct(Client $client)
+            public function __construct(GuzzleClientInterface $client)
             {
                 $this->client = $client;
             }

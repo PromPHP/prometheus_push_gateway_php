@@ -4,39 +4,50 @@ declare(strict_types=1);
 
 namespace PrometheusPushGateway;
 
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\RequestOptions;
 use Prometheus\CollectorRegistry;
 
-interface PushGateway
+final class PushGateway implements PushGatewayInterface
 {
     /**
-     * Pushes all metrics in a Collector, replacing all those with the same job.
-     * Uses HTTP PUT.
-     * @param CollectorRegistry $collectorRegistry
-     * @param string $job
-     * @param array<string> $groupingKey
-     *
-     * @throws PushGatewayException
+     * @var PushGatewayInterface
      */
-    public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void;
+    private $decorator;
 
     /**
-     * Pushes all metrics in a Collector, replacing only previously pushed metrics of the same name and job.
-     * Uses HTTP POST.
-     * @param CollectorRegistry $collectorRegistry
-     * @param string $job
-     * @param array<string> $groupingKey
-     *
-     * @throws PushGatewayException
+     * @param string $address (http|https)://host:port of the push gateway
+     * @param ClientInterface|null $client
      */
-    public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void;
+    public function __construct(string $address, ?ClientInterface $client = null)
+    {
+        $this->decorator = (new GuzzleFactory())->newGateway(
+            $address,
+            $client ?? [RequestOptions::TIMEOUT => 10, RequestOptions::CONNECT_TIMEOUT => 2]
+        );
+    }
 
     /**
-     * Deletes metrics from the Push Gateway.
-     * Uses HTTP POST.
-     * @param string $job
-     * @param array<string> $groupingKey
-     *
-     * @throws PushGatewayException
+     * {@inheritDoc}
      */
-    public function delete(string $job, array $groupingKey = []): void;
+    public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
+    {
+        $this->decorator->push($collectorRegistry, $job, $groupingKey);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
+    {
+        $this->decorator->pushAdd($collectorRegistry, $job, $groupingKey);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function delete(string $job, array $groupingKey = []): void
+    {
+        $this->decorator->delete($job, $groupingKey);
+    }
 }

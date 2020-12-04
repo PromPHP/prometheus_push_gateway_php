@@ -15,7 +15,7 @@ use RuntimeException;
 
 use function in_array;
 
-final class PsrPushGateway implements PushGateway
+final class PsrPushGateway implements PushGatewayInterface
 {
     private const METHOD_PUT = "PUT";
     private const METHOD_POST = "POST";

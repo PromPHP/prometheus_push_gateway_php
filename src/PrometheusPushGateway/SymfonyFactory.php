@@ -36,14 +36,14 @@ final class SymfonyFactory
      * @param int $maxHostConnections only taken into account if $defaultOptions is an array
      * @param int $maxPendingPushes only taken into account if $defaultOptions is an array
      *
-     * @return PushGateway
+     * @return PushGatewayInterface
      */
     public function newGateway(
         string $address,
         $defaultOptions = [],
         int $maxHostConnections = 6,
         int $maxPendingPushes = 50
-    ): PushGateway {
+    ): PushGatewayInterface {
         if ($defaultOptions instanceof HttpClientInterface) {
             $client = new Psr18Client($defaultOptions, $this->responseFactory, $this->streamFactory);
 
