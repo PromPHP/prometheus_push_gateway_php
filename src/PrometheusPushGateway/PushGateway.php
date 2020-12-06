@@ -21,10 +21,9 @@ final class PushGateway implements PushGatewayInterface
      */
     public function __construct(string $address, ?ClientInterface $client = null)
     {
-        $this->decorator = (new GuzzleFactory())->newGateway(
-            $address,
-            $client ?? [RequestOptions::TIMEOUT => 10, RequestOptions::CONNECT_TIMEOUT => 2]
-        );
+        $client = $client ?? [RequestOptions::TIMEOUT => 10, RequestOptions::CONNECT_TIMEOUT => 2];
+
+        $this->decorator = (new GuzzleFactory($client))->newGateway($address);
     }
 
     /**

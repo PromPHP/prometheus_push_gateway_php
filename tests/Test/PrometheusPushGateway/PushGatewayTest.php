@@ -15,16 +15,6 @@ use PrometheusPushGateway\GuzzleFactory;
 class PushGatewayTest extends TestCase
 {
     /**
-     * @var GuzzleFactory
-     */
-    private $gatewayFactory;
-
-    public function setUp(): void
-    {
-        $this->gatewayFactory = new GuzzleFactory();
-    }
-
-    /**
      * @test
      *
      * @doesNotPerformAssertions
@@ -42,7 +32,8 @@ class PushGatewayTest extends TestCase
         ]);
         $handler = HandlerStack::create($mockHandler);
 
-        $pushGateway = $this->gatewayFactory->newGateway('http://foo.bar', ['handler' => $handler]);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -66,7 +57,8 @@ class PushGatewayTest extends TestCase
         ]);
         $handler = HandlerStack::create($mockHandler);
 
-        $pushGateway = $this->gatewayFactory->newGateway('http://foo.bar', ['handler' => $handler]);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -82,7 +74,8 @@ class PushGatewayTest extends TestCase
             $this->createMock(MetricFamilySamples::class)
         ]);
 
-        $pushGateway = $this->gatewayFactory->newGateway('http://foo.bar');
+        $gatewayFactory = new GuzzleFactory();
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -108,7 +101,8 @@ class PushGatewayTest extends TestCase
         ]);
         $handler = HandlerStack::create($mockHandler);
 
-        $pushGateway = $this->gatewayFactory->newGateway($address, ['handler' => $handler]);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway($address);
         $pushGateway->push($mockedCollectorRegistry, 'foo');
         if ($mockHandler->getLastRequest() !== null) {
             $uri = $mockHandler->getLastRequest()->getUri();
