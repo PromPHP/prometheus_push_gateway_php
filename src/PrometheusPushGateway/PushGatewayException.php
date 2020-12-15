@@ -13,11 +13,20 @@ final class PushGatewayException extends RuntimeException
     /**
      * @var ResponseInterface|null
      */
-    private $response = null;
+    private $response;
+
+    private function __construct(
+        string $message = "",
+        Throwable $previous = null,
+        ResponseInterface $response = null
+    ) {
+        parent::__construct($message, 0, $previous);
+        $this->response = $response;
+    }
 
     public static function dueToServiceUnavailable(Throwable $exception): self
     {
-        return new self('The request could not be send or process', 0, $exception);
+        return new self('The request could not be send or process', $exception);
     }
 
     public static function dueToUnexpectedStatusCode(string $address, ResponseInterface $response): self
@@ -27,10 +36,7 @@ final class PushGatewayException extends RuntimeException
             . " received from push gateway "
             . $address . ": " . $response->getBody()->getContents();
 
-        $exception = new self($msg);
-        $exception->response = $response;
-
-        return $exception;
+        return new self($msg, null, $response);
     }
 
     /**

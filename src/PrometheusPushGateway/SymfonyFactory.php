@@ -10,25 +10,14 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\HttpClient\Psr18Client;
 
-final class SymfonyFactory
+final class SymfonyFactory implements PsrFactoryInterface
 {
     /**
-     * @var ?StreamFactoryInterface
+     * @var PsrFactory
      */
-    private $streamFactory;
+    private $factory;
 
     /**
-     * @var ?ResponseFactoryInterface
-     */
-    private $responseFactory;
-
-    /**
-     * @var Psr18Client
-     */
-    private $client;
-
-    /**
-     * SymfonyFactory constructor.
      * @param HttpClientInterface|array $defaultOptions
      * @param int $maxHostConnections
      * @param int $maxPendingPushes
@@ -42,27 +31,12 @@ final class SymfonyFactory
         StreamFactoryInterface $streamFactory = null,
         ResponseFactoryInterface $responseFactory = null
     ) {
-        $this->responseFactory = $responseFactory;
-        $this->streamFactory = $streamFactory;
-        $this->client = $this->createClient($defaultOptions, $maxHostConnections, $maxPendingPushes);
-    }
-
-    /**
-     * @param HttpClientInterface|array $defaultOptions
-     * @param int $maxHostConnections
-     * @param int $maxPendingPushes
-     *
-     * @return Psr18Client
-     */
-    private function createClient($defaultOptions, int $maxHostConnections, int $maxPendingPushes): Psr18Client
-    {
-        if ($defaultOptions instanceof HttpClientInterface) {
-            return new Psr18Client($defaultOptions, $this->responseFactory, $this->streamFactory);
+        if (!$defaultOptions instanceof HttpClientInterface) {
+            $defaultOptions = HttpClient::create($defaultOptions, $maxHostConnections, $maxPendingPushes);
         }
 
-        $httpClient = HttpClient::create($defaultOptions, $maxHostConnections, $maxPendingPushes);
-
-        return new Psr18Client($httpClient, $this->responseFactory, $this->streamFactory);
+        $client = new Psr18Client($defaultOptions, $responseFactory, $streamFactory);
+        $this->factory = new PsrFactory($client, $client, $client);
     }
 
     /**
@@ -72,6 +46,6 @@ final class SymfonyFactory
      */
     public function newGateway(string $address): PushGatewayInterface
     {
-        return new PsrPushGateway($address, $this->client, $this->client, $this->client);
+        return $this->factory->newGateway($address);
     }
 }

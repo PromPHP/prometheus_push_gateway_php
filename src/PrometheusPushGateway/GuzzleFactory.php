@@ -22,22 +22,12 @@ use function GuzzleHttp\Psr7\try_fopen;
 use function in_array;
 use function is_array;
 
-final class GuzzleFactory
+final class GuzzleFactory implements PsrFactoryInterface
 {
     /**
-     * @var ClientInterface
+     * @var PsrFactory
      */
-    private $client;
-
-    /**
-     * @var StreamFactoryInterface
-     */
-    private $streamFactory;
-
-    /**
-     * @var RequestFactoryInterface
-     */
-    private $requestFactory;
+    private $factory;
 
     /**
      * @param GuzzleClientInterface|array $options Guzzle Client or Guzzle Client config options
@@ -49,9 +39,21 @@ final class GuzzleFactory
         StreamFactoryInterface $streamFactory = null,
         RequestFactoryInterface $requestFactory = null
     ) {
-        $this->client = $this->createClient($options);
-        $this->requestFactory = $requestFactory ?? $this->createRequestFactory();
-        $this->streamFactory = $streamFactory ?? $this->createStreamFactory();
+        $this->factory = new PsrFactory(
+            $this->createClient($options),
+            $requestFactory ?? $this->createRequestFactory(),
+            $streamFactory ?? $this->createStreamFactory()
+        );
+    }
+
+    /**
+     * @param string $address
+     *
+     * @return PushGatewayInterface
+     */
+    public function newGateway(string $address): PushGatewayInterface
+    {
+        return $this->factory->newGateway($address);
     }
 
     /**
@@ -127,15 +129,5 @@ final class GuzzleFactory
                 return stream_for($resource);
             }
         };
-    }
-
-    /**
-     * @param string $address
-     *
-     * @return PushGatewayInterface
-     */
-    public function newGateway(string $address): PushGatewayInterface
-    {
-        return new PsrPushGateway($address, $this->client, $this->requestFactory, $this->streamFactory);
     }
 }
