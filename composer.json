@@ -38,7 +38,6 @@
   },
   "suggest": {
     "psr/http-client-implementation": "To use the functionnality with PSR compliant library",
-    "psr/http-factory-implementation": "To use the functionnality with PSR compliant library",
-    "symfony/http-client": "To use the functionnality with the Symfony HTTP Client library"
+    "psr/http-factory-implementation": "To use the functionnality with PSR compliant library"
   }
 }
