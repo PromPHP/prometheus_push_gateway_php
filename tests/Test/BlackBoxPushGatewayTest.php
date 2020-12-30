@@ -9,26 +9,20 @@ use PHPUnit\Framework\TestCase;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\InMemory;
 use PrometheusPushGateway\GuzzleFactory;
-use PrometheusPushGateway\SymfonyFactory;
+use PrometheusPushGateway\PsrFactory;
+use PrometheusPushGateway\PsrFactoryInterface;
+use PrometheusPushGateway\PushGatewayInterface;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\Psr18Client;
 
 class BlackBoxPushGatewayTest extends TestCase
 {
-    /**
-     * @var GuzzleFactory
-     */
-    private $gatewayFactory;
-
-    public function setUp(): void
-    {
-        $this->gatewayFactory = new GuzzleFactory();
-    }
-
     /**
      * @test
      *
      * @dataProvider pushGatewayProvider
      *
-     * @param SymfonyFactory|GuzzleFactory $factory
+     * @param PsrFactoryInterface $factory
      */
     public function pushGatewayShouldWork($factory): void
     {
@@ -63,9 +57,29 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
         );
     }
 
+    /**
+     * @return iterable<string,array<PsrFactoryInterface>>
+     */
     public function pushGatewayProvider(): iterable
     {
-        yield 'symfony' => [new SymfonyFactory()];
         yield 'guzzle'  => [new GuzzleFactory()];
+
+        $symfonyFactory = new class () implements PsrFactoryInterface {
+            /** @var PsrFactory */
+            private $factory;
+
+            public function __construct()
+            {
+                $client = new Psr18Client(HttpClient::create());
+                $this->factory = new PsrFactory($client, $client, $client);
+            }
+
+            public function newGateway(string $address): PushGatewayInterface
+            {
+                return $this->factory->newGateway($address);
+            }
+        };
+
+        yield 'symfony' => [$symfonyFactory];
     }
 }

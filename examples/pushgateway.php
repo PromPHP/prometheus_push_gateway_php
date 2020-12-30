@@ -9,7 +9,6 @@ use Prometheus\Storage\APC;
 use Prometheus\Storage\InMemory;
 use PrometheusPushGateway\GuzzleFactory;
 use PrometheusPushGateway\PushGateway;
-use PrometheusPushGateway\SymfonyFactory;
 
 $adapter = $_GET['adapter'];
 
@@ -30,12 +29,6 @@ $counter->incBy(6, ['blue']);
 $guzzleFactory = new GuzzleFactory([RequestOptions::CONNECT_TIMEOUT => 2, RequestOptions::TIMEOUT => 10]);
 $guzzlePushGateway = $guzzleFactory->newGateway('http://192.168.59.100:9091');
 $guzzlePushGateway->push($registry, 'my_job', ['instance' => 'foo']);
-
-//or using Symfony Client
-
-$symfonyFactory = new SymfonyFactory(['timeout' => 2, 'max_duration' => 10]);
-$symfonyPushGateway = $symfonyFactory->newGateway('http://192.168.59.100:9091');
-$symfonyPushGateway->push($registry, 'my_job', ['instance' => 'foo']);
 
 //or using Legacy PushGateway class
 
