@@ -11,7 +11,6 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use RuntimeException;
 
 use function in_array;
 
@@ -91,7 +90,7 @@ final class PsrPushGateway implements PushGatewayInterface
      * @param array<string,string> $groupingKey
      * @param CollectorRegistry|null $collectorRegistry
      *
-     * @throws RuntimeException
+     * @throws PushGatewayException
      */
     private function doRequest(
         string $method,
