@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PrometheusPushGateway;
 
-interface PsrFactoryInterface
+interface FactoryInterface
 {
     /**
      * @param string $address

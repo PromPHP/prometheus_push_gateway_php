@@ -10,7 +10,7 @@ use Prometheus\CollectorRegistry;
 use Prometheus\Storage\InMemory;
 use PrometheusPushGateway\GuzzleFactory;
 use PrometheusPushGateway\PsrFactory;
-use PrometheusPushGateway\PsrFactoryInterface;
+use PrometheusPushGateway\FactoryInterface;
 use PrometheusPushGateway\PushGatewayInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\Psr18Client;
@@ -22,7 +22,7 @@ class BlackBoxPushGatewayTest extends TestCase
      *
      * @dataProvider pushGatewayProvider
      *
-     * @param PsrFactoryInterface $factory
+     * @param FactoryInterface $factory
      */
     public function pushGatewayShouldWork($factory): void
     {
@@ -58,13 +58,13 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
     }
 
     /**
-     * @return iterable<string,array<PsrFactoryInterface>>
+     * @return iterable<string,array<FactoryInterface>>
      */
     public function pushGatewayProvider(): iterable
     {
         yield 'guzzle'  => [new GuzzleFactory()];
 
-        $symfonyFactory = new class () implements PsrFactoryInterface {
+        $symfonyFactory = new class () implements FactoryInterface {
             /** @var PsrFactory */
             private $factory;
 

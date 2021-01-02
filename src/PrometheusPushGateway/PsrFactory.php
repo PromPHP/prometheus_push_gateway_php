@@ -8,7 +8,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-final class PsrFactory implements PsrFactoryInterface
+final class PsrFactory implements FactoryInterface
 {
     /**
      * @var ClientInterface

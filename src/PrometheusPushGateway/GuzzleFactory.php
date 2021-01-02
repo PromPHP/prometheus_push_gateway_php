@@ -22,7 +22,7 @@ use function GuzzleHttp\Psr7\try_fopen;
 use function in_array;
 use function is_array;
 
-final class GuzzleFactory implements PsrFactoryInterface
+final class GuzzleFactory implements FactoryInterface
 {
     /**
      * @var PsrFactory
