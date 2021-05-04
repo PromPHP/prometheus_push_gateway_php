@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Test\PrometheusPushGateway;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Prometheus\CollectorRegistry;
 use Prometheus\MetricFamilySamples;
-use PrometheusPushGateway\PushGateway;
+use PrometheusPushGateway\GuzzleFactory;
 
 class PushGatewayTest extends TestCase
 {
@@ -32,9 +31,9 @@ class PushGatewayTest extends TestCase
             new Response(202),
         ]);
         $handler = HandlerStack::create($mockHandler);
-        $client = new Client(['handler' => $handler]);
 
-        $pushGateway = new PushGateway('http://foo.bar', $client);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -57,9 +56,9 @@ class PushGatewayTest extends TestCase
             new Response(300),
         ]);
         $handler = HandlerStack::create($mockHandler);
-        $client = new Client(['handler' => $handler]);
 
-        $pushGateway = new PushGateway('http://foo.bar', $client);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -75,7 +74,8 @@ class PushGatewayTest extends TestCase
             $this->createMock(MetricFamilySamples::class)
         ]);
 
-        $pushGateway = new PushGateway('http://foo.bar');
+        $gatewayFactory = new GuzzleFactory();
+        $pushGateway = $gatewayFactory->newGateway('http://foo.bar');
         $pushGateway->push($mockedCollectorRegistry, 'foo');
     }
 
@@ -100,9 +100,9 @@ class PushGatewayTest extends TestCase
             new Response(200),
         ]);
         $handler = HandlerStack::create($mockHandler);
-        $client = new Client(['handler' => $handler]);
 
-        $pushGateway = new PushGateway($address, $client);
+        $gatewayFactory = new GuzzleFactory(['handler' => $handler]);
+        $pushGateway = $gatewayFactory->newGateway($address);
         $pushGateway->push($mockedCollectorRegistry, 'foo');
         if ($mockHandler->getLastRequest() !== null) {
             $uri = $mockHandler->getLastRequest()->getUri();

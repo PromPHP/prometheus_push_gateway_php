@@ -8,14 +8,23 @@ use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\InMemory;
-use PrometheusPushGateway\PushGateway;
+use PrometheusPushGateway\GuzzleFactory;
+use PrometheusPushGateway\PsrFactory;
+use PrometheusPushGateway\FactoryInterface;
+use PrometheusPushGateway\PushGatewayInterface;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\Psr18Client;
 
 class BlackBoxPushGatewayTest extends TestCase
 {
     /**
      * @test
+     *
+     * @dataProvider pushGatewayProvider
+     *
+     * @param FactoryInterface $factory
      */
-    public function pushGatewayShouldWork(): void
+    public function pushGatewayShouldWork($factory): void
     {
         $adapter = new InMemory();
         $registry = new CollectorRegistry($adapter);
@@ -23,7 +32,7 @@ class BlackBoxPushGatewayTest extends TestCase
         $counter = $registry->registerCounter('test', 'some_counter', 'it increases', ['type']);
         $counter->incBy(6, ['blue']);
 
-        $pushGateway = new PushGateway('pushgateway:9091');
+        $pushGateway = $factory->newGateway('pushgateway:9091');
         $pushGateway->push($registry, 'my_job', ['instance' => 'foo']);
 
         $httpClient = new Client();
@@ -35,7 +44,7 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
             $metrics
         );
 
-        $pushGateway = new PushGateway('http://pushgateway:9091');
+        $pushGateway = $factory->newGateway('http://pushgateway:9091');
         $pushGateway->delete('my_job', ['instance' => 'foo']);
 
         $httpClient = new Client();
@@ -46,5 +55,31 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
 test_some_counter{instance="foo",job="my_job",type="blue"} 6',
             $metrics
         );
+    }
+
+    /**
+     * @return iterable<string,array<FactoryInterface>>
+     */
+    public function pushGatewayProvider(): iterable
+    {
+        yield 'guzzle'  => [new GuzzleFactory()];
+
+        $symfonyFactory = new class () implements FactoryInterface {
+            /** @var PsrFactory */
+            private $factory;
+
+            public function __construct()
+            {
+                $client = new Psr18Client(HttpClient::create());
+                $this->factory = new PsrFactory($client, $client, $client);
+            }
+
+            public function newGateway(string $address): PushGatewayInterface
+            {
+                return $this->factory->newGateway($address);
+            }
+        };
+
+        yield 'symfony' => [$symfonyFactory];
     }
 }
