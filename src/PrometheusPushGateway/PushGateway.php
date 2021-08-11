@@ -6,9 +6,10 @@ namespace PrometheusPushGateway;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Psr7\HttpFactory;
 use Prometheus\CollectorRegistry;
 
-final class PushGateway implements PushGatewayInterface
+class PushGateway implements PushGatewayInterface
 {
     /**
      * @var PushGatewayInterface
@@ -23,7 +24,18 @@ final class PushGateway implements PushGatewayInterface
     {
         $client = $client ?? [RequestOptions::TIMEOUT => 10, RequestOptions::CONNECT_TIMEOUT => 2];
 
-        $this->decorator = (new GuzzleFactory($client))->newGateway($address);
+        $this->decorator = $this->setFactory($client)->newGateway($address);
+    }
+
+    private function setFactory(ClientInterface $client): GuzzleFactory
+    {
+        if (class_exists(HttpFactory::class)) {
+            $psrFactory = new HttpFactory();
+
+            return new GuzzleFactory($client, $psrFactory, $psrFactory);
+        }
+
+        return new GuzzleFactory($client);
     }
 
     /**
