@@ -7,6 +7,7 @@ namespace PrometheusPushGateway;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\RequestOptions;
 use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface;
@@ -17,8 +18,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
-use function GuzzleHttp\Psr7\stream_for;
-use function GuzzleHttp\Psr7\try_fopen;
 use function in_array;
 use function is_array;
 
@@ -105,19 +104,19 @@ final class GuzzleFactory implements FactoryInterface
         return new class implements StreamFactoryInterface {
             public function createStream(string $content = ''): StreamInterface
             {
-                return stream_for($content);
+                return Utils::streamFor($content);
             }
 
             public function createStreamFromResource($resource): StreamInterface
             {
-                return stream_for($resource);
+                return Utils::streamFor($resource);
             }
 
             public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
             {
                 static $modeList = ['r', 'w', 'a', 'x', 'c'];
                 try {
-                    $resource = try_fopen($filename, $mode);
+                    $resource = Utils::tryFopen($filename, $mode);
                 } catch (RuntimeException $exception) {
                     if ('' === $mode || false === in_array($mode[0], $modeList, true)) {
                         throw new InvalidArgumentException('Invalid file opening mode "' . $mode . '"', 0, $exception);
@@ -126,7 +125,7 @@ final class GuzzleFactory implements FactoryInterface
                     throw $exception;
                 }
 
-                return stream_for($resource);
+                return Utils::streamFor($resource);
             }
         };
     }
