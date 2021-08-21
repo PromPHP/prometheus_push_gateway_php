@@ -104,11 +104,19 @@ final class GuzzleFactory implements FactoryInterface
         return new class implements StreamFactoryInterface {
             public function createStream(string $content = ''): StreamInterface
             {
+                if (function_exists('\GuzzleHttp\Psr7\stream_for')) {
+                    return \GuzzleHttp\Psr7\stream_for($content);
+                }
+
                 return Utils::streamFor($content);
             }
 
             public function createStreamFromResource($resource): StreamInterface
             {
+                if (function_exists('\GuzzleHttp\Psr7\stream_for')) {
+                    return \GuzzleHttp\Psr7\stream_for($resource);
+                }
+
                 return Utils::streamFor($resource);
             }
 
@@ -116,7 +124,11 @@ final class GuzzleFactory implements FactoryInterface
             {
                 static $modeList = ['r', 'w', 'a', 'x', 'c'];
                 try {
-                    $resource = Utils::tryFopen($filename, $mode);
+                    if (function_exists('\GuzzleHttp\Psr7\try_fopen')) {
+                        $resource = \GuzzleHttp\Psr7\try_fopen($filename, $mode);
+                    } else {
+                        $resource = Utils::tryFopen($filename, $mode);
+                    }
                 } catch (RuntimeException $exception) {
                     if ('' === $mode || false === in_array($mode[0], $modeList, true)) {
                         throw new InvalidArgumentException('Invalid file opening mode "' . $mode . '"', 0, $exception);
@@ -125,7 +137,7 @@ final class GuzzleFactory implements FactoryInterface
                     throw $exception;
                 }
 
-                return Utils::streamFor($resource);
+                return $this->createStreamFromResource($resource);
             }
         };
     }
