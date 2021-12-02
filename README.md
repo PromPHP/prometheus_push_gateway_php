@@ -34,7 +34,7 @@ Also look at the [examples](examples).
 
 ### Dependencies
 
-* PHP ^7.2
+* PHP ^7.2 | ^8.0
 * [Composer](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
 
 ## Black box testing
