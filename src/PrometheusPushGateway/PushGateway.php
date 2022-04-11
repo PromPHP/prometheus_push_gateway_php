@@ -34,7 +34,7 @@ class PushGateway
     public function __construct(string $address, ?ClientInterface $client = null)
     {
         $this->address = strpos($address, 'http') === false ? 'http://' . $address : $address;
-        $this->client = $client ?? new Client();
+        $this->client = $client ?? new Client(['connect_timeout' => 10, 'timeout' => 20]);
     }
 
     /**
@@ -95,8 +95,6 @@ class PushGateway
             'headers' => [
                 'Content-Type' => RenderTextFormat::MIME_TYPE,
             ],
-            'connect_timeout' => 10,
-            'timeout' => 20,
         ];
 
         if ($method !== self::HTTP_DELETE && $collectorRegistry !== null) {
