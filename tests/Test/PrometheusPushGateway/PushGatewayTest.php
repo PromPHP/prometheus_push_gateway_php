@@ -118,7 +118,7 @@ class PushGatewayTest extends TestCase
     /**
      * @return array[]
      */
-    public function validAddressAndRequestsProvider(): array
+    public function validAddressAndRequestsProvider(): array /** @phpstan-ignore-line */
     {
         return [
             ['foo.bar:123', 'http', 'foo.bar', 123],
