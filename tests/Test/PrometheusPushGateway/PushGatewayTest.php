@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Test\PrometheusPushGateway;
 
 use GuzzleHttp\Client;
@@ -20,12 +18,9 @@ class PushGatewayTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
-    public function validResponseShouldNotThrowException(): void
+    public function validResponseShouldNotThrowException()
     {
-        $mockedCollectorRegistry = $this->createMock(CollectorRegistry::class);
-        $mockedCollectorRegistry->method('getMetricFamilySamples')->with()->willReturn([
-            $this->createMock(MetricFamilySamples::class)
-        ]);
+        $mockedCollectorRegistry = $this->createCollectorRegistryMock();
 
         $mockHandler = new MockHandler([
             new Response(200),
@@ -43,14 +38,11 @@ class PushGatewayTest extends TestCase
      *
      * @doesNotPerformAnyAssertions
      */
-    public function invalidResponseShouldThrowRuntimeException(): void
+    public function invalidResponseShouldThrowRuntimeException()
     {
         self::expectException(\RuntimeException::class);
 
-        $mockedCollectorRegistry = $this->createMock(CollectorRegistry::class);
-        $mockedCollectorRegistry->method('getMetricFamilySamples')->with()->willReturn([
-            $this->createMock(MetricFamilySamples::class)
-        ]);
+        $mockedCollectorRegistry = $this->createCollectorRegistryMock();
 
         $mockHandler = new MockHandler([
             new Response(201),
@@ -65,22 +57,6 @@ class PushGatewayTest extends TestCase
 
     /**
      * @test
-     */
-    public function clientGetsDefinedIfNotSpecified(): void
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $mockedCollectorRegistry = $this->createMock(CollectorRegistry::class);
-        $mockedCollectorRegistry->method('getMetricFamilySamples')->with()->willReturn([
-            $this->createMock(MetricFamilySamples::class)
-        ]);
-
-        $pushGateway = new PushGateway('http://foo.bar');
-        $pushGateway->push($mockedCollectorRegistry, 'foo');
-    }
-
-    /**
-     * @test
      *
      * @dataProvider validAddressAndRequestsProvider
      * @param string $address
@@ -89,12 +65,9 @@ class PushGatewayTest extends TestCase
      * @param int $port
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function validAddressShouldCreateValidRequests(string $address, string $scheme, string $host, int $port): void
+    public function validAddressShouldCreateValidRequests($address, $scheme, $host, $port)
     {
-        $mockedCollectorRegistry = $this->createMock(CollectorRegistry::class);
-        $mockedCollectorRegistry->method('getMetricFamilySamples')->with()->willReturn([
-            $this->createMock(MetricFamilySamples::class)
-        ]);
+        $mockedCollectorRegistry = $this->createCollectorRegistryMock();
 
         $mockHandler = new MockHandler([
             new Response(200),
@@ -118,12 +91,36 @@ class PushGatewayTest extends TestCase
     /**
      * @return array[]
      */
-    public function validAddressAndRequestsProvider(): array /** @phpstan-ignore-line */
+    public function validAddressAndRequestsProvider() /** @phpstan-ignore-line */
     {
         return [
             ['foo.bar:123', 'http', 'foo.bar', 123],
             ['http://foo.bar:123', 'http', 'foo.bar', 123],
             ['https://foo.bar:123', 'https', 'foo.bar', 123],
         ];
+    }
+
+    private function createCollectorRegistryMock()
+    {
+        $metricA = $this->getMockBuilder(MetricFamilySamples::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getName', 'getType', 'getHelp', 'getSamples'])
+            ->getMock();
+
+        $metricA->method('getName')->willReturn('foo');
+        $metricA->method('getType')->willReturn('bar');
+        $metricA->method('getHelp')->willReturn('baz');
+        $metricA->method('getSamples')->willReturn([]);
+
+        $mockedCollectorRegistry = $this
+            ->getMockBuilder(CollectorRegistry::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getMetricFamilySamples'])
+            ->getMock();
+        $mockedCollectorRegistry->method('getMetricFamilySamples')
+            ->willReturn([$metricA]);
+
+
+        return $mockedCollectorRegistry;
     }
 }

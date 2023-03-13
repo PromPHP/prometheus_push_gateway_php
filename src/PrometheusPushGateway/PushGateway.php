@@ -1,91 +1,54 @@
 <?php
 
-declare(strict_types=1);
-
 namespace PrometheusPushGateway;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\GuzzleException;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
 use RuntimeException;
 
 class PushGateway
 {
-    const HTTP_PUT = "PUT";
-    const HTTP_POST = "POST";
-    const HTTP_DELETE = "DELETE";
-    /**
-     * @var string
-     */
-    private $address;
+    const HTTP_PUT = 'PUT';
+    const HTTP_POST = 'POST';
+    const HTTP_DELETE = 'DELETE';
 
     /**
-     * @var ClientInterface
+     * Prometheus Push Gateway base URL
+     * @var string
+     */
+    private $gatewayUrl;
+
+    /**
+     * HTTP Client
+     * @var \GuzzleHttp\Client
      */
     private $client;
 
-    /**
-     * PushGateway constructor.
-     * @param string $address (http|https)://host:port of the push gateway
-     * @param ClientInterface|null $client
-     */
-    public function __construct(string $address, ?ClientInterface $client = null)
+    public function __construct($gatewayUrl, \GuzzleHttp\Client $client = null)
     {
-        $this->address = strpos($address, 'http') === false ? 'http://' . $address : $address;
-        $this->client = $client ?? new Client(['connect_timeout' => 10, 'timeout' => 20]);
+        $this->gatewayUrl = $gatewayUrl;
+        $this->client = $client ?: new \GuzzleHttp\Client();
     }
 
-    /**
-     * Pushes all metrics in a Collector, replacing all those with the same job.
-     * Uses HTTP PUT.
-     * @param CollectorRegistry $collectorRegistry
-     * @param string $job
-     * @param array<string> $groupingKey
-     * @throws GuzzleException
-     */
-    public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
+    public function push(CollectorRegistry $collectorRegistry, $job, array $groupingKey = [])
     {
-        $this->doRequest($collectorRegistry, $job, $groupingKey, self::HTTP_PUT);
+        $this->doRequest($job, $groupingKey, self::HTTP_PUT, $collectorRegistry);
     }
 
-    /**
-     * Pushes all metrics in a Collector, replacing only previously pushed metrics of the same name and job.
-     * Uses HTTP POST.
-     * @param CollectorRegistry $collectorRegistry
-     * @param string $job
-     * @param array<string> $groupingKey
-     * @throws GuzzleException
-     */
-    public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
+    public function pushAdd(CollectorRegistry $collectorRegistry, $job, array $groupingKey = [])
     {
-        $this->doRequest($collectorRegistry, $job, $groupingKey, self::HTTP_POST);
+        $this->doRequest($job, $groupingKey, self::HTTP_POST, $collectorRegistry);
     }
 
-    /**
-     * Deletes metrics from the Push Gateway.
-     * Uses HTTP POST.
-     * @param string $job
-     * @param array<string> $groupingKey
-     * @throws GuzzleException
-     */
-    public function delete(string $job, array $groupingKey = []): void
+    public function delete($job, array $groupingKey = [])
     {
-        $this->doRequest(null, $job, $groupingKey, self::HTTP_DELETE);
+        $this->doRequest($job, $groupingKey, self::HTTP_DELETE);
     }
 
-    /**
-     * @param CollectorRegistry|null $collectorRegistry
-     * @param string $job
-     * @param array<string> $groupingKey
-     * @param string $method
-     * @throws GuzzleException
-     */
-    private function doRequest(?CollectorRegistry $collectorRegistry, string $job, array $groupingKey, string $method): void
+    protected function doRequest($action, array $groupingKey, $method, CollectorRegistry $collectorRegistry = null)
     {
-        $url = $this->address . "/metrics/job/" . $job;
-        if ($groupingKey !== []) {
+        $url = $this->gatewayUrl . "/metrics/job/" . $action;
+        if (!empty($groupingKey)) {
             foreach ($groupingKey as $label => $value) {
                 $url .= "/" . $label . "/" . $value;
             }
@@ -107,7 +70,7 @@ class PushGateway
             $msg = "Unexpected status code "
                 . $statusCode
                 . " received from push gateway "
-                . $this->address . ": " . $response->getBody();
+                . $this->gatewayUrl . ": " . $response->getBody();
             throw new RuntimeException($msg);
         }
     }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Test;
 
 use GuzzleHttp\Client;
@@ -15,7 +13,7 @@ class BlackBoxPushGatewayTest extends TestCase
     /**
      * @test
      */
-    public function pushGatewayShouldWork(): void
+    public function pushGatewayShouldWork()
     {
         $adapter = new InMemory();
         $registry = new CollectorRegistry($adapter);
@@ -28,7 +26,7 @@ class BlackBoxPushGatewayTest extends TestCase
 
         $httpClient = new Client();
         $metrics = $httpClient->get("http://pushgateway:9091/metrics")->getBody()->getContents();
-        self::assertStringContainsString(
+        self::assertContains(
             '# HELP test_some_counter it increases
 # TYPE test_some_counter counter
 test_some_counter{instance="foo",job="my_job",type="blue"} 6',
@@ -40,7 +38,7 @@ test_some_counter{instance="foo",job="my_job",type="blue"} 6',
 
         $httpClient = new Client();
         $metrics = $httpClient->get("http://pushgateway:9091/metrics")->getBody()->getContents();
-        self::assertStringNotContainsString(
+        self::assertNotContains(
             '# HELP test_some_counter it increases
 # TYPE test_some_counter counter
 test_some_counter{instance="foo",job="my_job",type="blue"} 6',
