@@ -1,11 +1,13 @@
-pushgateway:
-  image: prom/pushgateway
-  ports:
-    - 9091:9091
 
-phpunit:
-  build: php-fpm/
-  volumes:
-    - .:/var/www/html
-  links:
-    - pushgateway
+services:
+  pushgateway:
+    image: prom/pushgateway
+    ports:
+      - 9091:9091
+
+  phpunit:
+    build: php-fpm/
+    volumes:
+      - .:/var/www/html
+    links:
+      - pushgateway
