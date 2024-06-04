@@ -4,14 +4,14 @@
   "type": "library",
   "require": {
     "php": "^7.2|^8.0",
-    "guzzlehttp/guzzle": "^6.3|^7.0",
+    "guzzlehttp/guzzle": "^7.0",
     "promphp/prometheus_client_php": "^1.0|^2.0"
   },
   "require-dev": {
     "phpstan/extension-installer": "^1.0",
-    "phpstan/phpstan": "^1.5.4",
-    "phpstan/phpstan-phpunit": "^1.1.0",
-    "phpstan/phpstan-strict-rules": "^1.1.0",
+    "phpstan/phpstan": "^1.5",
+    "phpstan/phpstan-phpunit": "^1.1",
+    "phpstan/phpstan-strict-rules": "^1.1",
     "phpunit/phpunit": "^9.4",
     "squizlabs/php_codesniffer": "^3.6"
   },
@@ -30,6 +30,11 @@
   "autoload-dev": {
     "psr-0": {
       "Test\\PrometheusPushGateway\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true
     }
   }
 }

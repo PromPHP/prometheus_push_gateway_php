@@ -13,9 +13,9 @@ use RuntimeException;
 
 class PushGateway
 {
-    const HTTP_PUT = "PUT";
-    const HTTP_POST = "POST";
-    const HTTP_DELETE = "DELETE";
+    public const HTTP_PUT = "PUT";
+    public const HTTP_POST = "POST";
+    public const HTTP_DELETE = "DELETE";
     /**
      * @var string
      */
@@ -42,7 +42,7 @@ class PushGateway
      * Uses HTTP PUT.
      * @param CollectorRegistry $collectorRegistry
      * @param string $job
-     * @param array<string> $groupingKey
+     * @param array<string,string> $groupingKey
      * @throws GuzzleException
      */
     public function push(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
@@ -55,7 +55,7 @@ class PushGateway
      * Uses HTTP POST.
      * @param CollectorRegistry $collectorRegistry
      * @param string $job
-     * @param array<string> $groupingKey
+     * @param array<string,string> $groupingKey
      * @throws GuzzleException
      */
     public function pushAdd(CollectorRegistry $collectorRegistry, string $job, array $groupingKey = []): void
@@ -67,7 +67,7 @@ class PushGateway
      * Deletes metrics from the Push Gateway.
      * Uses HTTP POST.
      * @param string $job
-     * @param array<string> $groupingKey
+     * @param array<string,string> $groupingKey
      * @throws GuzzleException
      */
     public function delete(string $job, array $groupingKey = []): void
@@ -78,7 +78,7 @@ class PushGateway
     /**
      * @param CollectorRegistry|null $collectorRegistry
      * @param string $job
-     * @param array<string> $groupingKey
+     * @param array<string,string> $groupingKey
      * @param string $method
      * @throws GuzzleException
      */
